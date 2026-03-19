@@ -23,11 +23,28 @@ Generates standalone `.svg` files that render cleanly on GitHub, GitLab, and any
 
 ## Install
 
+### Via plugin marketplace (recommended)
+
 ```bash
-claude skill add --from https://github.com/pkt-lab/svg-diagram
+# Add as a marketplace source
+/plugin marketplace add pkt-lab/svg-diagram
+
+# Then install
+/plugin install svg-diagram@pkt-lab-svg-diagram
 ```
 
-Or manually copy `SKILL.md` to `~/.claude/skills/svg-diagram/SKILL.md`.
+After installing as a plugin, the skill is available as `/svg-diagram:svg-diagram`.
+
+### Via git clone + symlink
+
+```bash
+git clone https://github.com/pkt-lab/svg-diagram.git ~/svg-diagram
+ln -sfn ~/svg-diagram/skills/svg-diagram ~/.claude/skills/svg-diagram
+```
+
+### Manual
+
+Copy `skills/svg-diagram/SKILL.md` to `~/.claude/skills/svg-diagram/SKILL.md`.
 
 ## Usage
 
