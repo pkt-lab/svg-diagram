@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 820" width="400" height="820">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4A5568"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="200" y="30" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="20" font-weight="bold" fill="#1A202C">TC3 FVP Boot Flow</text>
+
+  <!-- System Controllers Group -->
+  <rect x="30" y="50" width="340" height="210" rx="12" fill="#F0F4F8" stroke="#4A5568" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="200" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="14" font-weight="bold" fill="#4A5568">System Controllers</text>
+
+  <!-- RSE (Cortex-M55) -->
+  <rect x="100" y="85" width="200" height="55" rx="8" fill="#6B7B8D" stroke="#4A5568" stroke-width="2"/>
+  <text x="200" y="108" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">RSE</text>
+  <text x="200" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="12" fill="#E2E8F0">Cortex-M55</text>
+
+  <line x1="200" y1="140" x2="200" y2="170" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- SCP (Cortex-M85) -->
+  <rect x="100" y="170" width="200" height="55" rx="8" fill="#6B7B8D" stroke="#4A5568" stroke-width="2"/>
+  <text x="200" y="193" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">SCP</text>
+  <text x="200" y="213" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="12" fill="#E2E8F0">Cortex-M85</text>
+
+  <!-- Arrow from System Controllers to Secure Firmware -->
+  <line x1="200" y1="225" x2="200" y2="290" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Secure Firmware Group -->
+  <rect x="30" y="280" width="340" height="310" rx="12" fill="#F0F4F8" stroke="#6B4E91" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="200" y="302" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="14" font-weight="bold" fill="#6B4E91">Secure Firmware</text>
+
+  <!-- TF-A BL1 -->
+  <rect x="100" y="315" width="200" height="50" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+  <text x="200" y="345" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">TF-A BL1</text>
+
+  <line x1="200" y1="365" x2="200" y2="395" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- TF-A BL2 -->
+  <rect x="100" y="395" width="200" height="50" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+  <text x="200" y="425" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">TF-A BL2</text>
+
+  <line x1="200" y1="445" x2="200" y2="475" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- BL31 / Hafnium -->
+  <rect x="100" y="475" width="200" height="55" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+  <text x="200" y="498" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">BL31</text>
+  <text x="200" y="518" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="12" fill="#E2E8F0">Hafnium (SPM)</text>
+
+  <!-- Arrow from Secure Firmware to Application -->
+  <line x1="200" y1="530" x2="200" y2="600" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Application Group -->
+  <rect x="30" y="590" width="340" height="210" rx="12" fill="#F0F4F8" stroke="#2D6CB4" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="200" y="612" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="14" font-weight="bold" fill="#2D6CB4">Application</text>
+
+  <!-- U-Boot -->
+  <rect x="100" y="625" width="200" height="50" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
+  <text x="200" y="655" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">U-Boot</text>
+
+  <line x1="200" y1="675" x2="200" y2="710" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Linux Kernel -->
+  <rect x="100" y="710" width="200" height="50" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
+  <text x="200" y="740" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="16" font-weight="bold" fill="#FFFFFF">Linux Kernel</text>
+
+</svg>
