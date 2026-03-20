@@ -97,8 +97,9 @@ These rules are non-negotiable. Violating them produces unreadable diagrams.
    <path d="M startX startY L startX midY L endX midY L endX endY"
          fill="none" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
    ```
-4. **Minimum arrow length: 30px.** If two connected boxes would be closer than 30px, increase spacing.
-5. **For bidirectional arrows**, use two separate lines offset by 8px rather than a single double-headed arrow.
+4. **Arrows must NEVER pass through a text label.** Since `#connections` renders on top of `#labels`, any arrow crossing a label area will obscure the text. For every arrow, verify that its path does not intersect the bounding box of any text element. If it would, offset the arrow horizontally or route around the label.
+5. **Minimum arrow length: 30px.** If two connected boxes would be closer than 30px, increase spacing.
+6. **For bidirectional arrows**, use two separate lines offset by 8px rather than a single double-headed arrow.
 6. **Arrow marker refX must account for stroke-width.** Use `refX="9"` for `stroke-width="2"` to avoid the arrowhead overlapping the target box.
 
 ### Spacing and positioning
@@ -118,12 +119,16 @@ These rules are non-negotiable. Violating them produces unreadable diagrams.
 - **Bold text is ~10% wider** — account for this when sizing boxes
 - **All text must use `dominant-baseline="central"` or manual baseline adjustment (+5px to y for `text-anchor="middle"`)** to vertically center in boxes
 
-## SVG template
+## SVG layered structure (MANDATORY)
 
-Start every diagram from this skeleton:
+Every SVG MUST use this layered structure. Layers are rendered in document order (first = bottom, last = top). **Connections MUST be in the last visible layer** so arrows are never hidden behind boxes.
+
+**Violating this layer order is a generation failure. Do not interleave nodes and edges.**
 
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 WIDTH HEIGHT" width="WIDTH" height="HEIGHT">
+
+  <!-- Layer 0: Definitions (markers, gradients, filters) -->
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#4A5568"/>
@@ -131,17 +136,52 @@ Start every diagram from this skeleton:
     <marker id="arrowhead-reverse" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
       <polygon points="10 0, 0 3.5, 10 7" fill="#4A5568"/>
     </marker>
-    <!-- Add gradients, filters here if needed -->
   </defs>
 
-  <!-- Title -->
-  <text x="CENTERX" y="30" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="20" font-weight="bold" fill="#1A202C">Diagram Title</text>
+  <!-- Layer 1: Background -->
+  <g id="background">
+    <rect x="0" y="0" width="WIDTH" height="HEIGHT" fill="#FFFFFF"/>
+  </g>
 
-  <!-- Components go here -->
+  <!-- Layer 2: Containers (group/zone backgrounds) -->
+  <g id="containers">
+    <!-- Light-filled rounded rects that visually group related nodes -->
+  </g>
+
+  <!-- Layer 3: Nodes (component boxes) -->
+  <g id="nodes">
+    <!-- All <rect> component boxes here — no arrows -->
+  </g>
+
+  <!-- Layer 4: Labels (all text) -->
+  <g id="labels">
+    <!-- Title, group labels, node labels, annotations -->
+  </g>
+
+  <!-- Layer 5: Connections (ALL arrows — MUST be last visible layer) -->
+  <g id="connections">
+    <!-- Every <line> and <path> connector goes here -->
+    <!-- Rendered on top of everything — never hidden behind a box -->
+  </g>
 
 </svg>
 ```
+
+### Layer rules
+
+| Layer | Contains | Order |
+|-------|----------|-------|
+| `<defs>` | Markers, gradients, filters | 0 (not rendered) |
+| `#background` | Canvas fill, watermarks | 1 (bottom) |
+| `#containers` | Group/zone background rects | 2 |
+| `#nodes` | Component boxes (`<rect>`) | 3 |
+| `#labels` | All `<text>` elements | 4 |
+| `#connections` | All arrows (`<line>`, `<path>`) | 5 (top) |
+
+- **NEVER place a `<line>` or arrow `<path>` inside `#nodes`, `#containers`, or `#labels`.**
+- **NEVER place a `<rect>` node inside `#connections`.**
+- Text labels go in `#labels`, even if they annotate an arrow (edge labels).
+- If a highlight/overlay layer is needed, add `<g id="highlights">` after `#connections`.
 
 Set `viewBox` and `width`/`height` to the actual content size. Add 30px padding around all edges.
 
@@ -194,6 +234,8 @@ For diagrams with many crossing connections:
 ## Self-check before output
 
 Before writing the final SVG, verify:
+- [ ] **Layer structure**: `<defs>` → `#background` → `#containers` → `#nodes` → `#labels` → `#connections`
+- [ ] **No interleaving**: zero `<line>`/`<path>` arrows outside `#connections`; zero `<rect>` nodes outside `#nodes`/`#containers`
 - [ ] Every text label fits within its box (character_count × px_per_char + 40 < box_width)
 - [ ] No two boxes overlap (check x, y, width, height boundaries)
 - [ ] Every arrow starts at a box edge and ends at a box edge
@@ -216,6 +258,7 @@ The validator checks for all the layout issues described above:
 - **text-overflow**: Text extends beyond its containing box
 - **text-overlap**: Two text elements overlap each other
 - **arrow-through-box**: An arrow passes through a box it shouldn't
+- **arrow-through-text**: An arrow passes through a text label area
 - **arrow-endpoint**: Arrow doesn't start/end at box edge
 - **missing-marker**: Arrowhead marker referenced but not defined
 - **tight-spacing**: Boxes are too close together (< 30px)
@@ -247,49 +290,54 @@ If the validator reports errors:
 For a request like "draw the boot flow for TF-A → U-Boot → Linux":
 
 ```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 380" width="300" height="380">
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#4A5568"/>
     </marker>
   </defs>
-  <text x="150" y="30" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="20" font-weight="bold" fill="#1A202C">Boot Flow</text>
 
-  <!-- BL1: box at (60, 55), 180x44 -->
-  <rect x="60" y="55" width="180" height="44" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
-  <text x="150" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="15" fill="#FFFFFF">TF-A BL1</text>
+  <g id="background">
+    <rect x="0" y="0" width="300" height="380" fill="#FFFFFF"/>
+  </g>
 
-  <!-- Arrow: BL1 bottom (150,99) to BL2 top (150,159) -->
-  <line x1="150" y1="99" x2="150" y2="159" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <g id="containers">
+    <!-- (none in this simple example) -->
+  </g>
 
-  <!-- BL2: box at (60, 159), 180x44 -->
-  <rect x="60" y="159" width="180" height="44" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
-  <text x="150" y="184" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="15" fill="#FFFFFF">TF-A BL2</text>
+  <g id="nodes">
+    <rect x="60" y="50" width="180" height="46" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+    <rect x="60" y="136" width="180" height="46" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+    <rect x="60" y="222" width="180" height="46" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
+    <rect x="60" y="308" width="180" height="46" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
+  </g>
 
-  <!-- Arrow: BL2 bottom (150,203) to U-Boot top (150,263) -->
-  <line x1="150" y1="203" x2="150" y2="263" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <g id="labels">
+    <text x="150" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="18" font-weight="bold" fill="#1A202C">Boot Flow</text>
+    <text x="150" y="78" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="14" font-weight="bold" fill="#FFFFFF">TF-A BL1</text>
+    <text x="150" y="164" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="14" font-weight="bold" fill="#FFFFFF">TF-A BL2</text>
+    <text x="150" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="14" font-weight="bold" fill="#FFFFFF">U-Boot</text>
+    <text x="150" y="336" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="14" font-weight="bold" fill="#FFFFFF">Linux Kernel</text>
+  </g>
 
-  <!-- U-Boot: box at (60, 263), 180x44 -->
-  <rect x="60" y="263" width="180" height="44" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
-  <text x="150" y="288" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="15" fill="#FFFFFF">U-Boot</text>
-
-  <!-- Arrow: U-Boot bottom (150,307) to Linux top (150,367) -->
-  <line x1="150" y1="307" x2="150" y2="347" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Linux: box at (60, 347), 180x44 -->
-  <rect x="60" y="347" width="180" height="44" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
-  <text x="150" y="372" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-        font-size="15" fill="#FFFFFF">Linux Kernel</text>
+  <g id="connections">
+    <line x1="150" y1="96" x2="150" y2="136" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="150" y1="182" x2="150" y2="222" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="150" y1="268" x2="150" y2="308" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </g>
 </svg>
 ```
 
 Key things this example demonstrates:
-- Boxes are consistently sized (180×44) and grid-aligned (all at x=60)
-- Text is centered at (box_x + box_width/2, box_y + box_height/2 + 3)
-- Arrows connect from exact bottom edge (y=box_y+box_height) to exact top edge (y=next_box_y)
-- 60px gap between boxes (bottom of one box to top of next)
-- Canvas sized to content: 300×400 with 30px padding
+- **Layered structure**: `<defs>` → `#background` → `#containers` → `#nodes` → `#labels` → `#connections`
+- **No interleaving**: all rects together, all text together, all arrows together
+- **Connections last**: arrows render on top, never hidden behind a box
+- Boxes are consistently sized (180×46) and grid-aligned (all at x=60)
+- Text is centered at (box_x + box_width/2, box_y + box_height/2 + 5)
+- Arrows connect from exact bottom edge to exact top edge
+- 40px gap between boxes, canvas sized to content with 30px padding

@@ -399,6 +399,51 @@ def check_arrow_through_box(lines: list[Line], boxes: list[Box]) -> list[Issue]:
     return issues
 
 
+def check_arrow_through_text(lines: list[Line], texts: list[TextEl]) -> list[Issue]:
+    """Check if any arrow passes through a text label's bounding area."""
+    issues = []
+    for line in lines:
+        for t in texts:
+            # Build a bounding box for the text with padding
+            pad = 4  # px tolerance around text
+            t_left = t.left - pad
+            t_right = t.right + pad
+            t_top = t.top - pad
+            t_bottom = t.bottom + pad
+
+            if t_right - t_left <= 0 or t_bottom - t_top <= 0:
+                continue
+
+            # Create a temporary Box for intersection testing
+            text_box = Box(
+                id=t.id, x=t_left, y=t_top,
+                width=t_right - t_left, height=t_bottom - t_top
+            )
+
+            # Check segments
+            if line.waypoints:
+                for j in range(len(line.waypoints) - 1):
+                    p1 = line.waypoints[j]
+                    p2 = line.waypoints[j + 1]
+                    if _segment_intersects_box(p1[0], p1[1], p2[0], p2[1], text_box):
+                        issues.append(Issue(
+                            severity="error",
+                            category="arrow-through-text",
+                            message=f'{line.id} passes through label "{t.text}"',
+                            suggestion="Route arrow to avoid the text area, or reposition the label"
+                        ))
+                        break
+            else:
+                if _segment_intersects_box(line.x1, line.y1, line.x2, line.y2, text_box):
+                    issues.append(Issue(
+                        severity="error",
+                        category="arrow-through-text",
+                        message=f'{line.id} passes through label "{t.text}"',
+                        suggestion="Route arrow to avoid the text area, or reposition the label"
+                    ))
+    return issues
+
+
 def check_arrow_endpoints(lines: list[Line], boxes: list[Box]) -> list[Issue]:
     """Check that arrows start/end at box edges, not centers or outside."""
     issues = []
@@ -727,14 +772,118 @@ def _is_group_box(box: Box) -> bool:
 # Main
 # ---------------------------------------------------------------------------
 
+def check_layer_structure(root) -> list[Issue]:
+    """Check that the SVG uses the mandatory layered structure.
+
+    Required order: <defs>, #background, #containers, #nodes, #labels, #connections.
+    Arrows must only appear inside #connections. Rects (non-background, non-marker)
+    must not appear inside #connections.
+    """
+    issues = []
+
+    # Collect top-level <g> ids in document order
+    g_ids = []
+    for child in root:
+        tag = strip_ns(child.tag)
+        if tag == "g":
+            gid = child.get("id", "")
+            if gid:
+                g_ids.append(gid)
+
+    expected_layers = ["background", "containers", "nodes", "labels", "connections"]
+
+    # Check if layered structure is used at all
+    if not any(gid in expected_layers for gid in g_ids):
+        issues.append(Issue(
+            severity="warning",
+            category="layer-structure",
+            message="SVG does not use layered <g> structure",
+            suggestion="Wrap elements in <g id=\"background\">, <g id=\"containers\">, "
+                       "<g id=\"nodes\">, <g id=\"labels\">, <g id=\"connections\">"
+        ))
+        return issues
+
+    # Check ordering of layers that are present
+    present = [gid for gid in g_ids if gid in expected_layers]
+    expected_order = [gid for gid in expected_layers if gid in present]
+    if present != expected_order:
+        issues.append(Issue(
+            severity="error",
+            category="layer-order",
+            message=f"Layer order is [{', '.join(present)}] but must be [{', '.join(expected_order)}]",
+            suggestion="Reorder <g> layers: background → containers → nodes → labels → connections"
+        ))
+
+    # Check that connections is the last layer with visible content
+    if "connections" in present and present[-1] != "connections":
+        issues.append(Issue(
+            severity="error",
+            category="layer-order",
+            message="#connections is not the last layer — arrows may be hidden behind boxes",
+            suggestion="Move <g id=\"connections\"> to be the last <g> in the SVG"
+        ))
+
+    # Find the #connections group and check for misplaced elements
+    connections_g = None
+    non_connections_gs = []
+    for child in root:
+        tag = strip_ns(child.tag)
+        if tag == "g":
+            gid = child.get("id", "")
+            if gid == "connections":
+                connections_g = child
+            elif gid in ("nodes", "containers", "labels", "background"):
+                non_connections_gs.append(child)
+
+    # Check: no arrows outside #connections
+    if connections_g is not None:
+        for g in non_connections_gs:
+            gid = g.get("id", "")
+            for elem in g.iter():
+                elem_tag = strip_ns(elem.tag)
+                if elem_tag in ("line", "polyline"):
+                    # Check if it has a marker (arrow indicator)
+                    if elem.get("marker-end") or elem.get("marker-start"):
+                        issues.append(Issue(
+                            severity="error",
+                            category="layer-violation",
+                            message=f"Arrow <{elem_tag}> found inside #{gid} — arrows must be in #connections",
+                            suggestion=f"Move this <{elem_tag}> into <g id=\"connections\">"
+                        ))
+                elif elem_tag == "path":
+                    fill = (elem.get("fill") or "").lower()
+                    if fill in ("none", "") and (elem.get("marker-end") or elem.get("marker-start")):
+                        issues.append(Issue(
+                            severity="error",
+                            category="layer-violation",
+                            message=f"Arrow <path> found inside #{gid} — arrows must be in #connections",
+                            suggestion="Move this <path> into <g id=\"connections\">"
+                        ))
+
+        # Check: no rect nodes inside #connections
+        for elem in connections_g.iter():
+            elem_tag = strip_ns(elem.tag)
+            if elem_tag == "rect":
+                issues.append(Issue(
+                    severity="error",
+                    category="layer-violation",
+                    message="<rect> found inside #connections — nodes must be in #nodes or #containers",
+                    suggestion="Move this <rect> out of <g id=\"connections\">"
+                ))
+
+    return issues
+
+
 def validate(filepath: str) -> tuple[list[Issue], dict]:
     data = parse_svg(filepath)
     issues = []
 
+    issues.extend(check_layer_structure(data["root"]))
     issues.extend(check_box_overlaps(data["boxes"]))
     issues.extend(check_text_overflow(data["boxes"], data["texts"]))
     issues.extend(check_text_overlaps(data["texts"]))
     issues.extend(check_arrow_through_box(data["lines"], data["boxes"]))
+    issues.extend(check_arrow_through_text(data["lines"], data["texts"]))
     issues.extend(check_arrow_endpoints(data["lines"], data["boxes"]))
     issues.extend(check_missing_markers(data["markers_defined"], data["markers_used"]))
     issues.extend(check_spacing(data["boxes"]))
