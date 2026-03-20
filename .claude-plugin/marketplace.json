@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "svg-diagram",
-      "source": ".",
+      "source": "./",
       "description": "Generate clean, professional SVG architecture and flow diagrams that render on GitHub",
       "version": "1.0.0",
       "author": { "name": "pkt-lab" },
