@@ -22,25 +22,12 @@ SVG diagrams need to work everywhere — GitHub strips JavaScript, `<foreignObje
 
 **Never use:** `<foreignObject>`, `<script>`, `<image>` with external URLs, `<use>` with external references, CSS `@import`, any JavaScript
 
-## Color palette
+## Color guidelines
 
-Use this palette for consistency across diagrams. The colors are chosen for contrast on both light and dark backgrounds.
-
-```
-Primary blue:    #4A90D9 (fill), #2D6CB4 (stroke)
-Secondary teal:  #50B5A9 (fill), #3A8F85 (stroke)
-Accent orange:   #E8854A (fill), #C46A2F (stroke)
-Accent purple:   #8B6BB5 (fill), #6B4E91 (stroke)
-Neutral gray:    #6B7B8D (fill), #4A5568 (stroke)
-Light fill:      #F0F4F8 (background), #E2E8F0 (alt background)
-Dark text:       #1A202C
-Light text:      #FFFFFF (on dark fills)
-Success green:   #48BB78 (fill), #2F855A (stroke)
-Warning red:     #F56565 (fill), #C53030 (stroke)
-Arrow/line:      #4A5568
-```
-
-Assign colors by role: blue for compute/processing, teal for storage/data, orange for external/user-facing, purple for security, gray for infrastructure. This makes diagrams self-documenting.
+Choose colors freely to best suit the diagram's content and context. The only hard rules:
+- **Contrast**: ensure sufficient contrast between text and its background (light text on dark fills, dark text on light fills)
+- **Consistency within a diagram**: use the same color for the same semantic role (e.g., all storage nodes share one color)
+- **Stroke colors** should be a darker shade of the fill color for visual cohesion
 
 ## CRITICAL: Planning before drawing
 
