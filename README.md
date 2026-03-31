@@ -14,12 +14,58 @@ Generates standalone `.svg` files that render cleanly on GitHub, GitLab, and any
 - Network topology
 - Memory maps
 
-## Why use this skill
+## Key features
 
 - **GitHub-safe SVGs** — no `<foreignObject>`, no JavaScript, no external refs
-- **Consistent color palette** — color-coded by role (blue=compute, teal=storage, orange=external, purple=security)
-- **Professional layout** — proper spacing, alignment, fonts, arrowheads
-- **Drop-in markdown embeds** — outputs `![description](path/to/diagram.svg)` ready to paste
+- **Mandatory layered structure** — separates background, containers, nodes, labels, and connections into distinct `<g>` layers. Connections always render last so arrows are never hidden behind boxes.
+- **Layout-first planning** — 5-step process (inventory → grid → size-to-text → route connections → canvas size) computed before any SVG is written
+- **Built-in validation** — Python script checks for box overlaps, text overflow, arrow-through-box, arrow-through-text, missing markers, tight spacing, viewbox mismatch, grid misalignment, and layer structure violations
+- **Free color choice** — no fixed palette; just ensure contrast, consistency within a diagram, and stroke-fill cohesion
+
+## SVG layer architecture
+
+Every generated diagram follows this mandatory layer order:
+
+```
+<defs>           — markers, gradients, filters
+#background      — canvas fill
+#containers      — group/zone background rects
+#nodes           — component boxes
+#labels          — all text elements
+#connections     — all arrows (MUST be last)
+```
+
+Nodes and edges are never interleaved. The validator enforces this.
+
+## Validation
+
+After generating any SVG, the skill runs `scripts/validate_svg.py` to catch layout issues:
+
+```bash
+python3 scripts/validate_svg.py <file.svg> --verbose
+python3 scripts/validate_svg.py <directory>          # batch validate
+```
+
+**Checks performed:**
+
+| Check | Severity | What it catches |
+|-------|----------|-----------------|
+| `layer-structure` | warning | No layered `<g>` groups |
+| `layer-order` | error | Layers in wrong order |
+| `layer-violation` | error | Arrows in `#nodes` or rects in `#connections` |
+| `box-overlap` | error | Two content boxes occupy the same space |
+| `text-overflow` | error | Text extends beyond its containing box |
+| `text-overlap` | error | Two text elements overlap each other |
+| `arrow-through-box` | error | Arrow passes through an unrelated box |
+| `arrow-through-text` | error | Arrow passes through a text label area |
+| `arrow-endpoint` | warning | Arrow doesn't start/end at box edge |
+| `missing-marker` | error | Arrowhead referenced but not defined |
+| `tight-spacing` | warning | Boxes closer than 30px edge-to-edge |
+| `viewbox` | error/warn | Canvas doesn't match content bounds |
+| `grid-alignment` | warning | Boxes at nearly-same positions (misaligned) |
+| `short-arrow` | warning | Arrow too short for arrowhead to render |
+
+**Exit codes:** 0 = pass, 1 = warnings only, 2 = errors found
 
 ## Install
 
@@ -61,18 +107,6 @@ Can you draw an architecture diagram of our microservices?
 ## Example output
 
 ![TC3 FVP Boot Flow](examples/tc3_boot_flow.svg)
-
-## Color palette
-
-| Role | Fill | Stroke | Use for |
-|------|------|--------|---------|
-| Primary blue | `#4A90D9` | `#2D6CB4` | Compute, processing |
-| Teal | `#50B5A9` | `#3A8F85` | Storage, data |
-| Orange | `#E8854A` | `#C46A2F` | External, user-facing |
-| Purple | `#8B6BB5` | `#6B4E91` | Security, firmware |
-| Gray | `#6B7B8D` | `#4A5568` | Infrastructure |
-| Green | `#48BB78` | `#2F855A` | Success, healthy |
-| Red | `#F56565` | `#C53030` | Warning, error |
 
 ## License
 
