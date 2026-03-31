@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 660" width="760" height="660">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4A5568"/>
+    </marker>
+  </defs>
+
+  <!-- Layer 1: Background -->
+  <g id="background">
+    <rect x="0" y="0" width="760" height="660" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Layer 2: Containers -->
+  <g id="containers">
+    <rect x="30" y="50" width="540" height="190" rx="12" fill="#EEF3FA"/>
+    <rect x="30" y="280" width="540" height="100" rx="12" fill="#FDF2E9"/>
+    <rect x="30" y="420" width="540" height="100" rx="12" fill="#F0F3F7"/>
+    <rect x="610" y="280" width="120" height="240" rx="10" fill="#F3EFF8" stroke-dasharray="6,3" stroke="#6B4E91" stroke-width="1"/>
+  </g>
+
+  <!-- Layer 3: Nodes -->
+  <g id="nodes">
+    <!-- Guest: Row 1 — user space -->
+    <rect x="60"  y="86"  width="150" height="44" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
+    <rect x="240" y="86"  width="150" height="44" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
+    <rect x="420" y="86"  width="120" height="44" rx="8" fill="#4A90D9" stroke="#2D6CB4" stroke-width="2"/>
+    <!-- Guest: Row 2 — virtio drivers -->
+    <rect x="60"  y="166" width="150" height="44" rx="8" fill="#50B5A9" stroke="#3A8F85" stroke-width="2"/>
+    <rect x="240" y="166" width="150" height="44" rx="8" fill="#50B5A9" stroke="#3A8F85" stroke-width="2"/>
+    <rect x="420" y="166" width="120" height="44" rx="8" fill="#50B5A9" stroke="#3A8F85" stroke-width="2"/>
+    <!-- QEMU backends -->
+    <rect x="60"  y="308" width="150" height="44" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
+    <rect x="240" y="308" width="150" height="44" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
+    <rect x="420" y="308" width="120" height="44" rx="8" fill="#E8854A" stroke="#C46A2F" stroke-width="2"/>
+    <!-- Host kernel modules -->
+    <rect x="60"  y="448" width="150" height="44" rx="8" fill="#6B7B8D" stroke="#4A5568" stroke-width="2"/>
+    <rect x="240" y="448" width="150" height="44" rx="8" fill="#6B7B8D" stroke="#4A5568" stroke-width="2"/>
+    <rect x="420" y="448" width="120" height="44" rx="8" fill="#6B7B8D" stroke="#4A5568" stroke-width="2"/>
+    <!-- libvirt -->
+    <rect x="625" y="380" width="90" height="44" rx="8" fill="#8B6BB5" stroke="#6B4E91" stroke-width="2"/>
+    <!-- Physical HW -->
+    <rect x="60" y="580" width="480" height="44" rx="8" fill="#3D4F5F" stroke="#2D3B48" stroke-width="2"/>
+  </g>
+
+  <!-- Layer 4: Labels -->
+  <g id="labels">
+    <text x="380" y="30" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="18" font-weight="bold" fill="#1A202C">QEMU / Virtio / KVM Architecture</text>
+
+    <!-- Group labels -->
+    <text x="540" y="68" text-anchor="end" font-family="Arial, Helvetica, sans-serif"
+          font-size="11" font-weight="bold" fill="#2D6CB4">Guest VM</text>
+    <text x="46" y="296" text-anchor="start" font-family="Arial, Helvetica, sans-serif"
+          font-size="11" font-weight="bold" fill="#C46A2F">QEMU</text>
+    <text x="46" y="436" text-anchor="start" font-family="Arial, Helvetica, sans-serif"
+          font-size="11" font-weight="bold" fill="#4A5568">Host Kernel</text>
+    <text x="670" y="296" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="10" font-weight="bold" fill="#6B4E91">Mgmt</text>
+
+    <!-- Guest row 1 -->
+    <text x="135" y="113" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Guest App</text>
+    <text x="315" y="113" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Guest Kernel</text>
+    <text x="480" y="113" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">vGPU</text>
+
+    <!-- Guest row 2 -->
+    <text x="135" y="193" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">virtio-net</text>
+    <text x="315" y="193" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">virtio-blk</text>
+    <text x="480" y="193" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">virtio-gpu</text>
+
+    <!-- QEMU -->
+    <text x="135" y="335" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Net Backend</text>
+    <text x="315" y="335" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Block Backend</text>
+    <text x="480" y="335" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Display</text>
+    <text x="670" y="407" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="12" font-weight="bold" fill="#FFFFFF">libvirt</text>
+
+    <!-- Host -->
+    <text x="135" y="475" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">TAP / Bridge</text>
+    <text x="315" y="475" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">KVM</text>
+    <text x="480" y="475" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">vhost-net</text>
+
+    <text x="300" y="607" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+          font-size="13" font-weight="bold" fill="#FFFFFF">Physical Hardware (NIC, Disk, GPU)</text>
+  </g>
+
+  <!-- Layer 5: Connections (LAST) -->
+  <g id="connections">
+    <!-- Horizontal: Guest App → Guest Kernel → vGPU -->
+    <line x1="210" y1="108" x2="240" y2="108" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="390" y1="108" x2="420" y2="108" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- Vertical data path: virtio → QEMU (3 columns at x=135, 315, 480) -->
+    <line x1="135" y1="210" x2="135" y2="308" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="315" y1="210" x2="315" y2="308" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="480" y1="210" x2="480" y2="308" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- Vertical data path: QEMU → Host (3 columns) -->
+    <line x1="135" y1="352" x2="135" y2="448" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="315" y1="352" x2="315" y2="448" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="480" y1="352" x2="480" y2="448" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- Host → Physical HW (3 columns merge down) -->
+    <line x1="135" y1="492" x2="135" y2="580" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="315" y1="492" x2="315" y2="580" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <line x1="480" y1="492" x2="480" y2="580" stroke="#4A5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+    <!-- libvirt → backends (orthogonal, routed to the right of boxes) -->
+    <path d="M 625 402 L 570 402 L 570 330 L 540 330"
+          fill="none" stroke="#6B4E91" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+    <path d="M 625 402 L 570 402 L 570 470 L 540 470"
+          fill="none" stroke="#6B4E91" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowhead)"/>
+  </g>
+
+</svg>

@@ -265,12 +265,46 @@ If the validator reports errors:
 
 **Do not skip validation.** Do not present the diagram to the user without running the validator first.
 
+## MANDATORY: Visual self-review
+
+After structural validation passes, you MUST visually inspect the rendered diagram. This catches aesthetic issues that structural checks cannot: awkward proportions, unbalanced spacing, label readability, arrow clarity.
+
+### Steps
+
+1. **Render** the SVG to PNG:
+   ```bash
+   python3 scripts/render_svg.py <path-to-svg>
+   ```
+   This produces a 2x PNG next to the SVG file (e.g., `diagram.svg` → `diagram.png`).
+
+2. **Read the PNG** using the Read tool to visually inspect the rendered diagram.
+
+3. **Check for visual issues:**
+   - Text readability — not too small, not clipped, clearly legible
+   - Arrow clarity — visible arrowheads, clear direction of flow
+   - Balanced spacing — no lopsided gaps, even distribution
+   - Overall proportions — not too tall/narrow, not cramped
+   - Label-arrow separation — arrows don't visually crowd labels
+   - Group container fit — no excessive empty space inside containers
+   - Color contrast — text readable against its background
+   - Professional appearance — would this look good in a presentation?
+
+4. **If issues found:** edit the SVG, re-run structural validation, re-render, re-inspect.
+
+5. **Only present to the user after visual check passes.**
+
+### Closing the loop
+
+When you fix a visual issue, consider whether it reveals a gap in the structural rules above. If so, note the pattern — it may become a new planning rule or validator check that prevents the issue in future diagrams.
+
 ## Output
 
 1. Write the `.svg` file to the appropriate location (next to the markdown that references it, or in an `assets/` or `docs/` directory)
 2. Run `python3 scripts/validate_svg.py <file> --verbose` and fix any errors
-3. Provide the markdown embed snippet: `![Description](relative/path/to/diagram.svg)`
-4. Briefly describe what the diagram shows and the validation result
+3. Run `python3 scripts/render_svg.py <file>` to render PNG
+4. Read the PNG with the Read tool — visually inspect and fix any issues
+5. Provide the markdown embed snippet: `![Description](relative/path/to/diagram.svg)`
+6. Briefly describe what the diagram shows and the validation result
 
 ## Example
 

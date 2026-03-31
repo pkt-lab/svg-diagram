@@ -11,9 +11,10 @@
       "name": "svg-diagram",
       "source": "./",
       "description": "Generate clean, professional SVG architecture and flow diagrams that render on GitHub",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": { "name": "pkt-lab" },
       "repository": "https://github.com/pkt-lab/svg-diagram",
+      "homepage": "https://github.com/pkt-lab/svg-diagram",
       "license": "MIT",
       "keywords": ["svg", "diagram", "architecture", "flowchart", "visualization"],
       "category": "productivity"
