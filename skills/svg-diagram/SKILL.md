@@ -87,7 +87,7 @@ These rules are non-negotiable. Violating them produces unreadable diagrams.
 4. **Arrows must NEVER pass through a text label.** Since `#connections` renders on top of `#labels`, any arrow crossing a label area will obscure the text. For every arrow, verify that its path does not intersect the bounding box of any text element. If it would, offset the arrow horizontally or route around the label.
 5. **Minimum arrow length: 30px.** If two connected boxes would be closer than 30px, increase spacing.
 6. **For bidirectional arrows**, use two separate lines offset by 8px rather than a single double-headed arrow.
-6. **Arrow marker refX must account for stroke-width.** Use `refX="9"` for `stroke-width="2"` to avoid the arrowhead overlapping the target box.
+7. **Arrow marker refX must account for stroke-width.** Use `refX="9"` for `stroke-width="2"` to avoid the arrowhead overlapping the target box.
 
 ### Spacing and positioning
 1. **Use a strict grid.** All box x-positions must be multiples of a consistent column width. All y-positions must be multiples of a consistent row height.

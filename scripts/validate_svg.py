@@ -238,15 +238,20 @@ def parse_svg(filepath: str):
         "svg_width": svg_width,
         "svg_height": svg_height,
         "root": root,
-        "tree": tree,
     }
+
+
+_FLOAT_RE = re.compile(r"[^\d.\-]")
 
 
 def _float(s: str) -> float:
     try:
-        return float(re.sub(r"[^\d.\-]", "", s))
+        return float(s)
     except (ValueError, TypeError):
-        return 0.0
+        try:
+            return float(_FLOAT_RE.sub("", s))
+        except (ValueError, TypeError):
+            return 0.0
 
 
 def _get_all_text(elem) -> str:
@@ -300,10 +305,11 @@ def _parse_path_endpoints(d: str) -> list[tuple[float, float]]:
 # Validation checks
 # ---------------------------------------------------------------------------
 
-def check_box_overlaps(boxes: list[Box]) -> list[Issue]:
+def check_box_overlaps(boxes: list[Box], content_boxes: list[Box] = None) -> list[Issue]:
     """Check if any two content boxes overlap (excluding background/group rects)."""
     issues = []
-    content_boxes = _get_content_boxes(boxes)
+    if content_boxes is None:
+        content_boxes = _get_content_boxes(boxes)
 
     for i, a in enumerate(content_boxes):
         for b in content_boxes[i + 1:]:
@@ -362,10 +368,9 @@ def check_text_overlaps(texts: list[TextEl]) -> list[Issue]:
     return issues
 
 
-def check_arrow_through_box(lines: list[Line], boxes: list[Box]) -> list[Issue]:
+def check_arrow_through_box(lines: list[Line], content_boxes: list[Box]) -> list[Issue]:
     """Check if any arrow/line passes through a box it doesn't start/end at."""
     issues = []
-    content_boxes = _get_content_boxes(boxes)
 
     for line in lines:
         for box in content_boxes:
@@ -444,10 +449,9 @@ def check_arrow_through_text(lines: list[Line], texts: list[TextEl]) -> list[Iss
     return issues
 
 
-def check_arrow_endpoints(lines: list[Line], boxes: list[Box]) -> list[Issue]:
+def check_arrow_endpoints(lines: list[Line], content_boxes: list[Box]) -> list[Issue]:
     """Check that arrows start/end at box edges, not centers or outside."""
     issues = []
-    content_boxes = _get_content_boxes(boxes)
 
     for line in lines:
         # Check start point
@@ -486,10 +490,11 @@ def check_missing_markers(markers_defined: set, markers_used: set) -> list[Issue
     return issues
 
 
-def check_spacing(boxes: list[Box]) -> list[Issue]:
+def check_spacing(boxes: list[Box], content_boxes: list[Box] = None) -> list[Issue]:
     """Check minimum spacing between adjacent boxes."""
     issues = []
-    content_boxes = _get_content_boxes(boxes)
+    if content_boxes is None:
+        content_boxes = _get_content_boxes(boxes)
     min_gap = 30  # px - warning threshold
 
     for i, a in enumerate(content_boxes):
@@ -583,10 +588,11 @@ def check_viewbox(data: dict) -> list[Issue]:
     return issues
 
 
-def check_grid_alignment(boxes: list[Box]) -> list[Issue]:
+def check_grid_alignment(boxes: list[Box], content_boxes: list[Box] = None) -> list[Issue]:
     """Check that boxes align to a consistent grid."""
     issues = []
-    content_boxes = _get_content_boxes(boxes)
+    if content_boxes is None:
+        content_boxes = _get_content_boxes(boxes)
     if len(content_boxes) < 3:
         return issues  # too few boxes to judge
 
@@ -876,19 +882,20 @@ def check_layer_structure(root) -> list[Issue]:
 
 def validate(filepath: str) -> tuple[list[Issue], dict]:
     data = parse_svg(filepath)
+    content_boxes = _get_content_boxes(data["boxes"])
     issues = []
 
     issues.extend(check_layer_structure(data["root"]))
-    issues.extend(check_box_overlaps(data["boxes"]))
+    issues.extend(check_box_overlaps(data["boxes"], content_boxes))
     issues.extend(check_text_overflow(data["boxes"], data["texts"]))
     issues.extend(check_text_overlaps(data["texts"]))
-    issues.extend(check_arrow_through_box(data["lines"], data["boxes"]))
+    issues.extend(check_arrow_through_box(data["lines"], content_boxes))
     issues.extend(check_arrow_through_text(data["lines"], data["texts"]))
-    issues.extend(check_arrow_endpoints(data["lines"], data["boxes"]))
+    issues.extend(check_arrow_endpoints(data["lines"], content_boxes))
     issues.extend(check_missing_markers(data["markers_defined"], data["markers_used"]))
-    issues.extend(check_spacing(data["boxes"]))
+    issues.extend(check_spacing(data["boxes"], content_boxes))
     issues.extend(check_viewbox(data))
-    issues.extend(check_grid_alignment(data["boxes"]))
+    issues.extend(check_grid_alignment(data["boxes"], content_boxes))
     issues.extend(check_short_arrows(data["lines"]))
 
     return issues, data

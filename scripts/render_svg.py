@@ -24,7 +24,6 @@ def render(svg_path: str, png_path: str, scale: float = 2.0) -> str:
     """Render an SVG file to PNG. Returns the output path."""
     handle = Rsvg.Handle.new_from_file(svg_path)
 
-    # get_intrinsic_dimensions is the non-deprecated API
     has_w, width, has_h, height, has_vb, viewbox = handle.get_intrinsic_dimensions()
 
     if has_w and has_h:
@@ -54,6 +53,7 @@ def render(svg_path: str, png_path: str, scale: float = 2.0) -> str:
     handle.render_document(ctx, viewport)
 
     surface.write_to_png(png_path)
+    surface.finish()
     return png_path
 
 
@@ -64,12 +64,12 @@ def main():
     parser.add_argument("--scale", "-s", type=float, default=2.0, help="Scale factor (default: 2)")
     args = parser.parse_args()
 
-    if not os.path.isfile(args.svg):
-        print(f"Error: {args.svg} not found")
-        sys.exit(1)
-
     png_path = args.output or os.path.splitext(args.svg)[0] + ".png"
-    out = render(args.svg, png_path, args.scale)
+    try:
+        out = render(args.svg, png_path, args.scale)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     print(f"Rendered: {out}")
 
 
