@@ -104,9 +104,15 @@ Or just ask naturally — the skill auto-triggers on "draw", "visualize", "diagr
 Can you draw an architecture diagram of our microservices?
 ```
 
+## How it works
+
+![svg-diagram Skill Architecture](examples/project_architecture.svg)
+
 ## Example output
 
-![TC3 FVP Boot Flow](examples/tc3_boot_flow.svg)
+| Boot Flow | Architecture |
+|-----------|-------------|
+| ![TC3 FVP Boot Flow](examples/tc3_boot_flow.svg) | ![QEMU/Virtio/KVM](examples/qemu_virtio_architecture.svg) |
 
 ## License
 

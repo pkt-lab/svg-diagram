@@ -157,3 +157,11 @@ class TestExampleSVGs:
         issues, _ = validate(path)
         errors = [i for i in issues if i.severity == "error"]
         assert not errors, f"Errors: {[e.message for e in errors]}"
+
+    def test_project_architecture_passes(self):
+        path = os.path.join(os.path.dirname(__file__), "..", "examples", "project_architecture.svg")
+        if not os.path.isfile(path):
+            pytest.skip("Example SVG not found")
+        issues, _ = validate(path)
+        errors = [i for i in issues if i.severity == "error"]
+        assert not errors, f"Errors: {[e.message for e in errors]}"
