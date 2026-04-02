@@ -4,66 +4,35 @@ A Claude Code skill that generates clean, professional SVG architecture and flow
 
 ## What it does
 
-Generates standalone `.svg` files that render cleanly on GitHub, GitLab, and any browser. Supports:
+Generates standalone `.svg` files that render cleanly on GitHub, GitLab, and any browser. Supports architecture diagrams, flowcharts, sequence diagrams, component diagrams, boot flow / pipeline visualizations, network topology, and memory maps.
 
-- Architecture diagrams
-- Flowcharts
-- Sequence diagrams
-- Component diagrams
-- Boot flow / pipeline visualizations
-- Network topology
-- Memory maps
+## How it works
+
+![svg-diagram Skill Architecture](examples/project_architecture.svg)
+
+The skill uses a closed-loop pipeline:
+
+1. **Plan layout** — 5-step process (inventory → grid → size-to-text → route connections → canvas size) before writing any SVG
+2. **Generate SVG** — mandatory layered structure with connections rendered last
+3. **Structural validation** — `validate_svg.py` checks for overlaps, text overflow, arrow routing, layer violations, and more
+4. **Visual self-review** — `render_svg.py` converts SVG to PNG, Claude reads the image and checks for aesthetic issues
+5. **Fix loop** — if either check fails, edit and re-validate until clean
 
 ## Key features
 
 - **GitHub-safe SVGs** — no `<foreignObject>`, no JavaScript, no external refs
-- **Mandatory layered structure** — separates background, containers, nodes, labels, and connections into distinct `<g>` layers. Connections always render last so arrows are never hidden behind boxes.
-- **Layout-first planning** — 5-step process (inventory → grid → size-to-text → route connections → canvas size) computed before any SVG is written
-- **Built-in validation** — Python script checks for box overlaps, text overflow, arrow-through-box, arrow-through-text, missing markers, tight spacing, viewbox mismatch, grid misalignment, and layer structure violations
+- **Layered SVG structure** — `<defs>` → `#background` → `#containers` → `#nodes` → `#labels` → `#connections`. Connections always render last so arrows are never hidden behind boxes.
+- **Structural validation** — 14 automated checks catch box overlaps, text overflow, arrow-through-box, arrow-through-text, missing markers, tight spacing, viewbox mismatch, grid misalignment, and layer violations
+- **Visual self-review** — SVG→PNG rendering via librsvg+cairo, Claude reads the PNG to catch aesthetic issues the structural validator can't
 - **Free color choice** — no fixed palette; just ensure contrast, consistency within a diagram, and stroke-fill cohesion
-
-## SVG layer architecture
-
-Every generated diagram follows this mandatory layer order:
-
-```
-<defs>           — markers, gradients, filters
-#background      — canvas fill
-#containers      — group/zone background rects
-#nodes           — component boxes
-#labels          — all text elements
-#connections     — all arrows (MUST be last)
-```
-
-Nodes and edges are never interleaved. The validator enforces this.
 
 ## Validation
 
-After generating any SVG, the skill runs `scripts/validate_svg.py` to catch layout issues:
-
 ```bash
-python3 scripts/validate_svg.py <file.svg> --verbose
-python3 scripts/validate_svg.py <directory>          # batch validate
+python3 scripts/validate_svg.py <file.svg> --verbose   # structural checks
+python3 scripts/validate_svg.py <directory>             # batch validate
+python3 scripts/render_svg.py <file.svg>                # render to PNG for visual review
 ```
-
-**Checks performed:**
-
-| Check | Severity | What it catches |
-|-------|----------|-----------------|
-| `layer-structure` | warning | No layered `<g>` groups |
-| `layer-order` | error | Layers in wrong order |
-| `layer-violation` | error | Arrows in `#nodes` or rects in `#connections` |
-| `box-overlap` | error | Two content boxes occupy the same space |
-| `text-overflow` | error | Text extends beyond its containing box |
-| `text-overlap` | error | Two text elements overlap each other |
-| `arrow-through-box` | error | Arrow passes through an unrelated box |
-| `arrow-through-text` | error | Arrow passes through a text label area |
-| `arrow-endpoint` | warning | Arrow doesn't start/end at box edge |
-| `missing-marker` | error | Arrowhead referenced but not defined |
-| `tight-spacing` | warning | Boxes closer than 30px edge-to-edge |
-| `viewbox` | error/warn | Canvas doesn't match content bounds |
-| `grid-alignment` | warning | Boxes at nearly-same positions (misaligned) |
-| `short-arrow` | warning | Arrow too short for arrowhead to render |
 
 **Exit codes:** 0 = pass, 1 = warnings only, 2 = errors found
 
@@ -72,14 +41,9 @@ python3 scripts/validate_svg.py <directory>          # batch validate
 ### Via plugin marketplace (recommended)
 
 ```bash
-# Add as a marketplace source
 /plugin marketplace add pkt-lab/svg-diagram
-
-# Then install
 /plugin install svg-diagram@pkt-lab-svg-diagram
 ```
-
-After installing as a plugin, the skill is available as `/svg-diagram:svg-diagram`.
 
 ### Via git clone + symlink
 
@@ -103,16 +67,6 @@ Or just ask naturally — the skill auto-triggers on "draw", "visualize", "diagr
 ```
 Can you draw an architecture diagram of our microservices?
 ```
-
-## How it works
-
-![svg-diagram Skill Architecture](examples/project_architecture.svg)
-
-## Example output
-
-| Boot Flow | Architecture |
-|-----------|-------------|
-| ![TC3 FVP Boot Flow](examples/tc3_boot_flow.svg) | ![QEMU/Virtio/KVM](examples/qemu_virtio_architecture.svg) |
 
 ## License
 
